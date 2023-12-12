@@ -2,7 +2,8 @@ package flecs
 
 import "core:c"
 
-ID_FLAG_BIT :: c.ulonglong(1) << 63
+// DEPRECATED
+// ID_FLAG_BIT :: c.ulonglong(1) << 63
 
 IdBitFlags :: enum id_t
 {
@@ -225,6 +226,6 @@ EcsPhase : Entity : HI_COMPONENT_ID + 75
 
 // EcsLastInternalComponentId
 
-EcsFirstUserComponentId :: 32
+EcsFirstUserComponentId :: 8
 
 EcsFirstUserEntityId :: HI_COMPONENT_ID + 128

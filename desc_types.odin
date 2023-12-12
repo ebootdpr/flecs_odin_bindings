@@ -2,6 +2,17 @@ package flecs
 
 import "core:c"
 
+FLECS_HI_COMPONENT_ID ::256
+FLECS_HI_ID_RECORD_ID :: 1024
+FLECS_SPARSE_PAGE_BITS ::12
+FLECS_ENTITY_PAGE_BITS :: 12
+FLECS_TERM_DESC_MAX :: 16
+FLECS_EVENT_DESC_MAX :: 8
+FLECS_VARIABLE_COUNT_MAX :: 64
+FLECS_QUERY_SCOPE_NESTING_MAX :: 8
+FLECS_ID_DESC_MAX :: 32
+
+//typedef struct ecs_entity_desc_t {
 EntityDesc :: struct
 {
     _canary: c.int32_t,
@@ -12,23 +23,25 @@ EntityDesc :: struct
     symbol: cstring,
 
     use_low_id: bool,
-    add: [ID_CACHE_SIZE]id_t,
+    add: [FLECS_ID_DESC_MAX]id_t,
     add_expr: cstring,
 }
 
+//typedef struct ecs_bulk_desc_t { 
 BulkDesc :: struct
 {
     _canary: c.int32_t,
     entities: [^]Entity,
     count: c.int32_t,
 
-    ids: [ID_CACHE_SIZE]id_t,
+    ids: [FLECS_ID_DESC_MAX]id_t,
 
     data: [^]rawptr,
 
     table: ^Table,
 }
 
+//typedef struct ecs_component_desc_t {
 ComponentDesc :: struct
 {
     _canary: c.int32_t,
@@ -36,10 +49,11 @@ ComponentDesc :: struct
     type: TypeInfo,
 }
 
+//typedef struct ecs_filter_desc_t {
 FilterDesc :: struct
 {
     _canary: c.int32_t,
-    terms: [TERM_DESC_CACHE_SIZE]Term,
+    terms: [FLECS_TERM_DESC_MAX]Term,
     terms_buffer: [^]Term,
     terms_buffer_count: c.int32_t,
 
@@ -48,9 +62,11 @@ FilterDesc :: struct
     instanced: bool,
     flags: flags32_t,
     expr: cstring,
-    name: cstring,
+    //name: cstring,
+    entity: Entity,
 }
 
+//typedef struct ecs_query_desc_t {
 QueryDesc :: struct
 {
     _canary: c.int32_t,
@@ -65,15 +81,20 @@ QueryDesc :: struct
     group_by_ctx: rawptr,
     group_by_ctx_free: ctx_free_t,
     parent: ^Query,
-    entity: Entity,
+    //entity: Entity,
+    ctx : rawptr,
+    binding_ctx : rawptr,
+    ctx_free: ctx_free_t,
+    binding_ctx_free:ctx_free_t,
 }
 
+//typedef struct ecs_observer_desc_t {
 ObserverDesc :: struct
 {
     _canary: c.int32_t,
     entity: Entity,
     filter: FilterDesc,
-    events: [OBSERVER_DESC_EVENT_COUNT_MAX]Entity,
+    events: [FLECS_EVENT_DESC_MAX]Entity,
     yield_existing: bool,
     callback: iter_action_t,
     run: run_action_t,
@@ -84,42 +105,38 @@ ObserverDesc :: struct
     observable: ^poly_t,
     last_event_id: ^c.int32_t,
     term_index: c.int32_t,
-}
+}//EcsIdentifier
 
-// Builtin components
-EcsIdentifier :: struct
+
+//typedef struct ecs_event_desc_t {
+ecs_event_desc_t :: struct 
 {
-    value: cstring,
-    length: size_t,
-    hash: c.uint64_t,
-    index_hash: c.uint64_t,
-    index: ^Hashmap,
+    event:Entity,
+    ids:[^]Type, //maybe its ^Type, idk how to tell the diff aside from the plural naming
+    table: ^Table,
+    other_table: ^Table,
+    offset:c.int32_t,
+    count:c.int32_t,
+    entity:Entity,
+    param:rawptr,
+    const_param:rawptr,
+    observable:^ecs_poly_t,
+    flags:flags32_t,
 }
-
-EcsComponent :: struct
-{
-    size: size_t,
-    alignment: size_t,
-}
-
-EcsPoly :: struct
-{
-    poly: ^poly_t,
-}
-
-EcsIterable :: Iterable
 
 // misc types
+//typedef struct ecs_value_t {
 Value :: struct
 {
     type: Entity,
     ptr: rawptr,
 }
 
+//typedef struct ecs_world_info_t {
 WorldInfo :: struct
 {
     last_component_id: Entity,
-    last_id: Entity,
+    //last_id: Entity,
     min_id: Entity,
     max_id: Entity,
 
@@ -138,7 +155,6 @@ WorldInfo :: struct
     frame_count_total: c.int64_t,
     merge_count_total: c.int64_t,
     rematch_count_total: c.int64_t,
-
     id_create_total: c.int64_t,
     id_delete_total: c.int64_t,
     table_create_total: c.int64_t,
@@ -147,18 +163,18 @@ WorldInfo :: struct
     systems_ran_frame: c.int64_t,
     observers_ran_frame: c.int64_t,
 
-    id_count: c.int32_t,
+    //id_count: c.int32_t,
     tag_id_count: c.int32_t,
     component_id_count: c.int32_t,
     pair_id_count: c.int32_t,
-    wildcard_id_count: c.int32_t,
+    //wildcard_id_count: c.int32_t,
 
     table_count: c.int32_t,
-    tag_table_count: c.int32_t,
-    trivial_table_count: c.int32_t,
+    // tag_table_count: c.int32_t,
+    // trivial_table_count: c.int32_t,
     empty_table_count: c.int32_t,
-    table_record_count: c.int32_t,
-    table_storage_count: c.int32_t,
+    // table_record_count: c.int32_t,
+    // table_storage_count: c.int32_t,
 
     cmd: struct
     {
@@ -178,9 +194,44 @@ WorldInfo :: struct
     name_prefix: cstring,
 }
 
+//typedef struct ecs_query_group_info_t {
 QueryGroupInfo :: struct
 {
     match_count: c.int32_t,
     table_count: c.int32_t,
     ctx: rawptr,
 }
+
+// Builtin components
+//typedef struct EcsIdentifier {
+EcsIdentifier :: struct
+{
+    value: cstring,
+    length: size_t,
+    hash: c.uint64_t,
+    index_hash: c.uint64_t,
+    index: ^Hashmap,
+}
+
+//typedef struct EcsComponent {
+EcsComponent :: struct
+{
+    size: size_t,
+    alignment: size_t,
+}
+
+//typedef struct EcsPoly {
+EcsPoly :: struct
+{
+    poly: ^poly_t,
+}
+
+//typedef struct EcsTarget {
+EcsTarget :: struct
+{
+    count: c.int32_t,
+    target: ^Record,
+}
+
+//typedef ecs_iterable_t EcsIterable;
+EcsIterable :: Iterable

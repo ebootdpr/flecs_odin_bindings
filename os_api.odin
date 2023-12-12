@@ -3,6 +3,7 @@ package flecs
 import "core:c"
 import "core:mem"
 
+//typedef struct ecs_time_t {
 Time :: struct
 {
     sec: c.uint32_t,
@@ -29,6 +30,12 @@ os_api_strdup_t :: #type proc "c" (str: cstring) -> cstring
 os_thread_callback_t :: #type proc "c" (_: rawptr) -> rawptr
 os_api_thread_new_t :: #type proc "c" (callback: os_thread_callback_t, param: rawptr) -> os_thread_t
 os_api_thread_join_t :: #type proc "c" (thread: os_thread_t) -> rawptr
+os_api_thread_self_t :: #type proc "c" () -> os_thread_id_t
+
+// Tasks
+os_api_task_new_t ::  #type proc "c" (callback: os_thread_callback_t,param: rawptr) -> os_thread_t
+os_api_task_join_t :: #type proc "c" (thread:os_thread_t)->rawptr
+
 
 // Atomic increment/decrement
 os_api_ainc_t :: #type proc "c" (value: ^c.int32_t) -> c.int32_t
@@ -78,6 +85,7 @@ when ODIN_OS != .WASI || ODIN_OS != .JS
     }
 }
 
+//typedef struct ecs_os_api_t {
 OSApi :: struct
 {
     // API init/deinit
@@ -96,6 +104,11 @@ OSApi :: struct
     // Threads
     thread_new_: os_api_thread_new_t,
     thread_join_: os_api_thread_join_t,
+    thread_self_:os_api_thread_self_t,
+
+    // Tasks 
+    task_new_:os_api_thread_new_t ,
+    task_join_:os_api_thread_join_t ,
 
     // Atomic increment/decrement
     ainc_: os_api_ainc_t,
@@ -155,83 +168,103 @@ OSApi :: struct
     flags_: flags32_t,
 }
 
+//#define ecs_os_malloc(size) ecs_os_api.malloc_(size)
 os_malloc :: proc(size: size_t) -> rawptr
 {
     return GlobalOSApi.malloc_(size)
 }
 
+// #define ecs_os_free(ptr) ecs_os_api.free_(ptr)
 os_free :: proc(ptr: rawptr)
 {
     GlobalOSApi.free_(ptr)
 }
 
+//#define ecs_os_realloc(ptr, size) ecs_os_api.realloc_(ptr, size)
 os_realloc :: proc(ptr: rawptr, size: size_t) -> rawptr
 {
     return GlobalOSApi.realloc_(ptr, size)
 }
 
+//#define ecs_os_calloc(size) ecs_os_api.calloc_(size)
 os_calloc :: proc(size: size_t) -> rawptr
 {
     return GlobalOSApi.calloc_(size)
 }
 
-os_alloca :: proc(size: size_t) -> rawptr
+//#define ecs_os_alloca(size) alloca((size_t)(size))
+os_alloca :: proc(size: size_t) -> (rawptr, mem.Allocator_Error)
 {
     return mem.alloc(cast(int)size)
 }
-
+// #define ecs_os_malloc_t(T) ECS_CAST(T*, ecs_os_malloc(ECS_SIZEOF(T)))
 os_malloc_t :: proc($T: typeid) -> ^T
 {
     return cast(^T)os_malloc(size_of(T))
 }
 
+// #define ecs_os_malloc_n(T, count) ECS_CAST(T*, ecs_os_malloc(ECS_SIZEOF(T) * (count)))
 os_malloc_n :: proc($T: typeid, count: u32) -> ^T
 {
     return cast(^T)os_malloc(size_of(T) * count)
 }
 
+// #define ecs_os_calloc_t(T) ECS_CAST(T*, ecs_os_calloc(ECS_SIZEOF(T)))
 os_calloc_t :: proc($T: typeid) -> ^T
 {
     return cast(^T)os_calloc(size_of(T))
 }
 
+// #define ecs_os_calloc_n(T, count) ECS_CAST(T*, ecs_os_calloc(ECS_SIZEOF(T) * (count)))
 os_calloc_n :: proc($T: typeid, count: u32) -> ^T
 {
     return cast(^T)os_calloc(size_of(T) * count)
 }
 
+// #define ecs_os_realloc_t(ptr, T) ECS_CAST(T*, ecs_os_realloc(ptr, ECS_SIZEOF(T)))
 os_realloc_t :: proc(ptr: rawptr, $T: typeid) -> ^T
 {
     return cast(^T)os_realloc(ptr, size_of(T))
 }
 
+// #define ecs_os_realloc_n(ptr, T, count) ECS_CAST(T*, ecs_os_realloc(ptr, ECS_SIZEOF(T) * (count)))
 os_realloc_n :: proc(ptr: rawptr, $T: typeid, count: u32) -> ^T
 {
     return cast(^T)os_realloc(ptr, size_of(T) * count)
 }
 
+// #define ecs_os_alloca_t(T) ECS_CAST(T*, ecs_os_alloca(ECS_SIZEOF(T)))
 os_alloca_t :: proc($T: typeid) -> ^T
 {
     return cast(^T)os_alloca(size_of(T))
 }
 
+// #define ecs_os_alloca_n(T, count) ECS_CAST(T*, ecs_os_alloca(ECS_SIZEOF(T) * (count)))
 os_alloca_n :: proc($T: typeid, count: u32) -> ^T
 {
     return cast(^T)os_alloca(size_of(T) * count)
 }
 
 // Strings
+//#define ecs_os_strdup(str) ecs_os_api.strdup_(str)
 os_strdup :: proc(str: cstring) -> cstring
 {
     return GlobalOSApi.strdup_(str)
 }
 
-os_strset :: proc(dst: ^cstring, src: cstring)
-{
-    os_free(dst)
-    dst^ = os_strdup(src)
-}
+// #define ecs_os_strset(dst, src) ecs_os_free(*dst); *dst = ecs_os_strdup(src)
+//DEPRECATED:
+// os_strset :: proc(dst: ^cstring, src: cstring)
+// {
+//     os_free(dst)
+//     dst^ = os_strdup(src)
+// }
+//NEW ONE:
+// FLECS_API
+// void ecs_os_strset(char **str, const char *value);
+ecs_os_strset:: proc(str: [^]cstring,value:cstring)
 
+//#define ecs_os_strlen(str) (ecs_size_t)strlen(str)
 os_strlen :: proc(str: cstring) -> size_t
 {
     return cast(size_t)len(str)

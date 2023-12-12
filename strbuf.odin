@@ -52,10 +52,10 @@ StrBuf :: struct
 
 strbuf_appendlit :: proc(buf: ^StrBuf, str: cstring) -> bool
 {
-    return strbuf_appendstrn(buf, str, cast(c.int32_t)(size_of(str) - 1))
+    return ecs_strbuf_appendstrn(buf, str, cast(c.int32_t)(size_of(str) - 1))
 }
 
 strbuf_list_appendlit :: proc(buf: ^StrBuf, str: cstring) -> bool
 {
-    return strbuf_list_appendstrn(buf, str, cast(c.int32_t)(size_of(str) - 1))
+    return ecs_strbuf_list_appendstrn(buf, str, cast(c.int32_t)(size_of(str) - 1))
 }

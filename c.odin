@@ -29,7 +29,7 @@ Tag :: proc(world: ^World, $T: typeid)
 
     desc.name = strings.clone_to_cstring(_GetTypeName(T))
 
-    id := entity_init(world, &desc)
+    id := ecs_entity_init(world, &desc)
 }
 
 Component :: proc(world: ^World, $T: typeid)
@@ -44,10 +44,10 @@ Component :: proc(world: ^World, $T: typeid)
     edesc.symbol = component_name_c
 
     desc: ComponentDesc
-    desc.entity = entity_init(world, &edesc)
+    desc.entity = ecs_entity_init(world, &edesc)
     desc.type.size = size_of(T)
     desc.type.alignment = align_of(T)
-    id := component_init(world, &desc)
+    id := ecs_component_init(world, &desc)
 }
 
 ObserverDefine :: proc(world: ^World, $T: typeid, kind: Entity, args: ..string)
@@ -60,10 +60,10 @@ ObserverDefine :: proc(world: ^World, $T: typeid, kind: Entity, args: ..string)
     edesc.name = name_c
     edesc.symbol = name_c
 
-    odesc.entity = entity_init(world, &edesc)
+    odesc.entity = ecs_entity_init(world, &edesc)
     odesc.filter.expr = strings.clone_to_cstring(strings.concatenate(args))
     odesc.events[0] = kind
-    id := observer_init(world, &desc)
+    id := ecs_observer_init(world, &desc)
 }
 
 // Function macros
@@ -73,12 +73,12 @@ ObserverDefine :: proc(world: ^World, $T: typeid, kind: Entity, args: ..string)
 
 new :: proc(world: ^World, $T: typeid) -> Entity
 {
-    return new_w_id(world, id(world, T))
+    return ecs_new_w_id(world, id(world, T))
 }
 
 new_w_pair :: proc(world: ^World, first: Entity, second: Entity) -> Entity
 {
-    return new_w_id(world, pair(first, second))
+    return ecs_new_w_id(world, pair(first, second))
 }
 
 bulk_new :: proc(world: ^World, $component: typeid, count: c.int32_t) -> ^Entity
@@ -87,9 +87,9 @@ bulk_new :: proc(world: ^World, $component: typeid, count: c.int32_t) -> ^Entity
     cdesc.type.size = size_of(component)
     cdesc.type.alignment = align_of(component)
 
-    id := component_init(world, &cdesc)
+    id := ecs_component_init(world, &cdesc)
 
-    return bulk_new_w_id(world, id, count)
+    return ecs_bulk_new_w_id(world, id, count)
 }
 
 new_entity :: proc(world: ^World, n: cstring) -> Entity
@@ -98,7 +98,7 @@ new_entity :: proc(world: ^World, n: cstring) -> Entity
     edesc.name = n
     edesc.symbol = n
 
-    return entity_init(world, &edesc)
+    return ecs_entity_init(world, &edesc)
 }
 
 new_prefab :: proc(world: ^World, n: cstring) -> Entity
@@ -108,7 +108,7 @@ new_prefab :: proc(world: ^World, n: cstring) -> Entity
     edesc.symbol = n
     edesc.add[0] = EcsPrefab
 
-    return entity_init(world, &edesc)
+    return ecs_entity_init(world, &edesc)
 }
 
 
@@ -117,12 +117,12 @@ new_prefab :: proc(world: ^World, n: cstring) -> Entity
 
 add :: proc(world: ^World, entity: Entity, $T: typeid)
 {
-    add_id(world, entity, id(world, T))
+    ecs_add_id(world, entity, id(world, T))
 }
 
 add_pair :: proc(world: ^World, subject: Entity, first: Entity, second: Entity)
 {
-    add_id(world, subject, pair(first, second))
+    ecs_add_id(world, subject, pair(first, second))
 }
 
 
@@ -131,12 +131,12 @@ add_pair :: proc(world: ^World, subject: Entity, first: Entity, second: Entity)
 
 remove :: proc(world: ^World, entity: Entity, $T: typeid)
 {
-    remove_id(world, entity, id(world, T))
+    ecs_remove_id(world, entity, id(world, T))
 }
 
 remove_pair :: proc(world: ^World, subject: Entity, first: Entity, second: Entity)
 {
-    remove_id(world, subject, pair(first, second))
+    ecs_remove_id(world, subject, pair(first, second))
 }
 
 
@@ -145,12 +145,12 @@ remove_pair :: proc(world: ^World, subject: Entity, first: Entity, second: Entit
 
 override :: proc(world: ^World, entity: Entity, $T: typeid)
 {
-    override_id(world, entity, id(world, T))
+    ecs_override_id(world, entity, id(world, T))
 }
 
 override_pair :: proc(world: ^World, subject: Entity, first: Entity, second: Entity)
 {
-    override_id(world, subject, pair(first, second))
+    ecs_override_id(world, subject, pair(first, second))
 }
 
 
@@ -159,7 +159,7 @@ override_pair :: proc(world: ^World, subject: Entity, first: Entity, second: Ent
 
 delete_children :: proc(world: ^World, parent: Entity)
 {
-    delete_with(world, pair(EcsChildOf, parent))
+    ecs_delete_with(world, pair(EcsChildOf, parent))
 }
 
 
@@ -172,9 +172,9 @@ set_ptr :: proc(world: ^World, entity: Entity, $component: typeid, ptr: rawptr) 
     cdesc.entity = id(world, component)
     cdesc.type.size = size_of(component)
     cdesc.type.alignment = align_of(component)
-    id := component_init(world, &cdesc)
+    id := ecs_component_init(world, &cdesc)
 
-    return set_id(world, entity, id, size_of(component), ptr)
+    return ecs_set_id(world, entity, id, size_of(component), ptr)
 }
 
 set :: proc(world: ^World, entity: Entity, $component: typeid, args: component) -> Entity
@@ -183,11 +183,11 @@ set :: proc(world: ^World, entity: Entity, $component: typeid, args: component) 
     cdesc.entity = id(world, component)
     cdesc.type.size = size_of(component)
     cdesc.type.alignment = align_of(component)
-    id := component_init(world, &cdesc)
+    id := ecs_component_init(world, &cdesc)
 
     args := args
 
-    return set_id(world, entity, id, size_of(component), &args)
+    return ecs_set_id(world, entity, id, size_of(component), &args)
 }
 
 set_pair :: proc(world: ^World, subject: Entity, $First: typeid, second: Entity, args: First) -> Entity
@@ -196,11 +196,11 @@ set_pair :: proc(world: ^World, subject: Entity, $First: typeid, second: Entity,
     cdesc.entity = id(world, First)
     cdesc.type.size = size_of(First)
     cdesc.type.alignment = align_of(First)
-    id := component_init(world, &cdesc)
+    id := ecs_component_init(world, &cdesc)
 
     args := args
 
-    return set_id(world, subject, pair(id, second), size_of(First), &args)
+    return ecs_set_id(world, subject, pair(id, second), size_of(First), &args)
 }
 
 set_pair_second :: proc(world: ^World, subject: Entity, first: Entity, $Second: typeid, args: Second) -> Entity
@@ -209,11 +209,11 @@ set_pair_second :: proc(world: ^World, subject: Entity, first: Entity, $Second: 
     cdesc.entity = id(world, Second)
     cdesc.type.size = size_of(Second)
     cdesc.type.alignment = align_of(Second)
-    id := component_init(world, &cdesc)
+    id := ecs_component_init(world, &cdesc)
 
     args := args
 
-    return set_id(world, subject, pair(first, id), size_of(Second), &args)
+    return ecs_set_id(world, subject, pair(first, id), size_of(Second), &args)
 }
 
 set_pair_object :: set_pair_second
@@ -239,17 +239,17 @@ emplace :: proc(world: ^World, entity: Entity, $T: typeid) -> ^T
 
 get :: proc(world: ^World, entity: Entity, $T: typeid) -> ^T
 {
-    return cast(^T)get_id(world, entity, id(world, T))
+    return cast(^T)ecs_get_id(world, entity, id(world, T))
 }
 
 get_pair :: proc(world: ^World, subject: Entity, $First: typeid, second: Entity) -> ^First
 {
-    return cast(^First)get_id(world, subject, pair(id(world, First), second))
+    return cast(^First)ecs_get_id(world, subject, pair(id(world, First), second))
 }
 
 get_pair_second :: proc(world: ^World, subject: Entity, first: Entity, $Second: typeid) -> ^Second
 {
-    return cast(^Second)get_id(world, subject, pair(first, id(world, Second)))
+    return cast(^Second)ecs_get_id(world, subject, pair(first, id(world, Second)))
 }
 
 get_pair_object :: get_pair_second
@@ -260,17 +260,17 @@ get_pair_object :: get_pair_second
 
 record_get :: proc(world: ^World, record: ^Record, $T: typeid) -> ^T
 {
-    return cast(^T)record_get_id(world, record, id(world, T))
+    return cast(^T)ecs_record_get_id(world, record, id(world, T))
 }
 
 record_get_pair :: proc(world: ^World, record: ^Record, $First: typeid, second: Entity) -> ^First
 {
-    return cast(^First)record_get_id(world, record, pair(id(world, First), second))
+    return cast(^First)ecs_record_get_id(world, record, pair(id(world, First), second))
 }
 
 record_get_pair_second :: proc(world: ^World, record: ^Record, first: Entity, $Second: typeid) -> ^Second
 {
-    return cast(^Second)record_get_id(world, record, pair(first, id(world, Second)))
+    return cast(^Second)ecs_record_get_id(world, record, pair(first, id(world, Second)))
 }
 
 
@@ -293,12 +293,12 @@ ref_get :: proc(world: ^World, ref: ^Ref, $T: typeid) -> ^T
 
 modified :: proc(world: ^World, entity: Entity, $component: typeid)
 {
-    modified_id(world, entity, id(component))
+    ecs_modified_id(world, entity, id(component))
 }
 
 modified_pair :: proc(world: ^World, subject: Entity, first: Entity, second: Entity)
 {
-    modified_id(world, subject, pair(first, second))
+    ecs_modified_id(world, subject, pair(first, second))
 }
 
 
@@ -341,12 +341,12 @@ has :: proc(world: ^World, entity: Entity, $T: typeid) -> c.bool
 
 has_pair :: proc(world: ^World, entity: Entity, first: Entity, second: Entity) -> c.bool
 {
-    return has_id(world, entity, pair(first, second))
+    return ecs_has_id(world, entity, pair(first, second))
 }
 
 owns_id :: proc(world: ^World, entity: Entity, id: id_t) -> c.bool
 {
-    return (search(world, get_table(world, entity), id, nil) != -1)
+    return (ecs_search(world, ecs_get_table(world, entity), id, nil) != -1)
 }
 
 owns_pair :: proc(world: ^World, entity: Entity, first: Entity, second: Entity) -> c.bool
@@ -359,19 +359,19 @@ owns :: proc(world: ^World, entity: Entity, $T: typeid) -> c.bool
     return owns_id(world, entity, id(world, T))
 }
 
-shares_id :: proc(world: ^World, entity: Entity, id: id_t) -> c.bool
-{
-    return (search_relation(world, get_table(world, entity), 0, id, EcsIsA, 1, nil, nil, nil) != -1)
-}
+// shares_id :: proc(world: ^World, entity: Entity, id: id_t) -> c.bool
+// {
+//     return (ecs_search_relation(world, ecs_get_table(world, entity), 0, id, EcsIsA, 1, nil, nil, nil) != -1)
+// }
 
-shares_pair :: proc(world: ^World, entity: Entity, first: Entity, second: Entity) -> c.bool
-{
-    return shares_id(world, entity, pair(first, second))
-}
+// shares_pair :: proc(world: ^World, entity: Entity, first: Entity, second: Entity) -> c.bool
+// {
+//     return ecs_shares_id(world, entity, ecs_pair(first, second))
+// }
 
 shares :: proc(world: ^World, entity: Entity, $T: typeid) -> c.bool
 {
-    return shares_id(world, entity, id(T))
+    return ecs_shares_id(world, entity, id(T))
 }
 
 
@@ -413,47 +413,47 @@ count :: proc(world: ^World, $type: typeid) -> c.int32_t
 
 lookup_path :: proc(world: ^World, parent: Entity, path: cstring) -> Entity
 {
-    return lookup_path_w_sep(world, parent, path, ".", nil, true)
+    return ecs_lookup_path_w_sep(world, parent, path, ".", nil, true)
 }
 
 lookup_fullpath :: proc(world: ^World, path: cstring) -> Entity
 {
-    return lookup_path_w_sep(world, 0, path, ".", nil, true)
+    return ecs_lookup_path_w_sep(world, 0, path, ".", nil, true)
 }
 
-get_path :: proc(world: ^World, parent: Entity, child: Entity) -> cstring
-{
-    return get_path_w_sep(world, parent, child, ".", nil)
-}
+// get_path :: proc(world: ^World, parent: Entity, child: Entity) -> cstring
+// {
+//     return ecs_get_path_w_sep(world, parent, child, ".", nil)
+// }
 
-get_fullpath :: proc(world: ^World, child: Entity) -> cstring
-{
-    return get_path_w_sep(world, 0, child, ".", nil)
-}
+// get_fullpath :: proc(world: ^World, child: Entity) -> cstring
+// {
+//     return ecs_get_path_w_sep(world, 0, child, ".", nil)
+// }
 
-get_fullpath_buf :: proc(world: ^World, child: Entity, buf: ^StrBuf)
-{
-    get_path_w_sep_buf(world, 0, child, ".", nil, buf)
-}
+// get_fullpath_buf :: proc(world: ^World, child: Entity, buf: ^StrBuf)
+// {
+//     ecs_get_path_w_sep_buf(world, 0, child, ".", nil, buf)
+// }
 
 new_from_path :: proc(world: ^World, parent: Entity, path: cstring) -> Entity
 {
-    return new_from_path_w_sep(world, parent, path, ".", nil)
+    return ecs_new_from_path_w_sep(world, parent, path, ".", nil)
 }
 
 new_from_fullpath :: proc(world: ^World, path: cstring) -> Entity
 {
-    return new_from_path_w_sep(world, 0, path, ".", nil)
+    return ecs_new_from_path_w_sep(world, 0, path, ".", nil)
 }
 
 add_path :: proc(world: ^World, entity: Entity, parent: Entity, path: cstring) -> Entity
 {
-    return add_path_w_sep(world, entity, parent, path, ".", nil)
+    return ecs_add_path_w_sep(world, entity, parent, path, ".", nil)
 }
 
 add_fullpath :: proc(world: ^World, entity: Entity, path: cstring) -> Entity
 {
-    return add_path_w_sep(world, entity, 0, path, ".", nil)
+    return ecs_add_path_w_sep(world, entity, 0, path, ".", nil)
 }
 
 
@@ -462,13 +462,13 @@ add_fullpath :: proc(world: ^World, entity: Entity, path: cstring) -> Entity
 
 field :: proc(it: ^Iter, $T: typeid, index: c.int32_t) -> [^]T
 {
-    return cast(^T)field_w_size(it, size_of(T), index)
+    return cast(^T)ecs_field_w_size(it, size_of(T), index)
 }
 
-iter_column :: proc(it: ^Iter, $T: typeid, index: c.int32_t) -> [^]T
-{
-    return cast(^T)iter_column_w_size(it, size_of(T), index)
-}
+// iter_column :: proc(it: ^Iter, $T: typeid, index: c.int32_t) -> [^]T
+// {
+//     return cast(^T)ecs_iter_column_w_size(it, size_of(T), index)
+// }
 
 
 // Utility macros
@@ -499,7 +499,7 @@ value :: proc(world: ^World, $T: typeid, ptr: rawptr) -> Value
 
 value_new_t :: proc(world: ^World, $T: typeid) -> rawptr
 {
-    return value_new(world, id(world, T))
+    return ecs_value_new(world, id(world, T))
 }
 
 query_new :: proc(world: ^World, q_expr: cstring) -> ^Query
@@ -507,7 +507,7 @@ query_new :: proc(world: ^World, q_expr: cstring) -> ^Query
     q: QueryDesc
     q.filter.expr = q_expr
 
-    return query_init(world, &q)
+    return ecs_query_init(world, &q)
 }
 
 rule_new :: proc(world: ^World, q_expr: cstring) -> ^Rule

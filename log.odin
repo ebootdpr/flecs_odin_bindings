@@ -4,7 +4,7 @@ import "core:c"
 import "core:fmt"
 
 // Error codes
-
+//#define ECS_INVALID_OPERATION (1)
 INVALID_OPERATION :: 1
 INVALID_PARAMETER :: 2
 CONSTRAINT_VIOLATED :: 3
@@ -19,6 +19,7 @@ INVALID_CONVERSION :: 11
 ID_IN_USE :: 12
 CYCLE_DETECTED :: 13
 LEAK_DETECTED :: 14
+ECS_DOUBLE_FREE :: 15
 
 INCONSISTENT_NAME :: 20
 NAME_IN_USE :: 21
@@ -45,14 +46,14 @@ INVALID_FROM_WORKER :: 72
 // Colors
 
 
-BLACK : cstring : "\033[1;30m"
-RED : cstring : "\033[0;31m"
-GREEN : cstring : "\033[0;32m"
-YELLOW : cstring : "\033[0;33m"
-BLUE : cstring : "\033[0;34m"
-MAGENTA : cstring : "\033[0;35m"
-CYAN : cstring : "\033[0;36m"
-WHITE : cstring : "\033[1;37m"
-GREY : cstring : "\033[0;37m"
-NORMAL : cstring : "\033[0;49m"
-BOLD : cstring : "\033[1;49m"
+BLACK : cstring : "\033[1; 30m"
+RED : cstring : "\033[0; 31m"
+GREEN : cstring : "\033[0; 32m"
+YELLOW : cstring : "\033[0; 33m"
+BLUE : cstring : "\033[0; 34m"
+MAGENTA : cstring : "\033[0; 35m"
+CYAN : cstring : "\033[0; 36m"
+WHITE : cstring : "\033[1; 37m"
+GREY : cstring : "\033[0; 37m"
+NORMAL : cstring : "\033[0; 49m"
+BOLD : cstring : "\033[1; 49m"

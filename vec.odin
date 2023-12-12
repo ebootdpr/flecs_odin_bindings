@@ -9,6 +9,8 @@ Vec :: struct
     size: c.int32_t,
 }
 
+//#define ecs_vec_init_t(allocator, vec, T, elem_count) \
+
 vec_init_t :: proc(allocator: ^Allocator, vec: ^Vec, $T: typeid, elem_count: c.int32_t) -> ^Vec
 {
     return vec_init(allocator, vec, size_of(T), elem_count)

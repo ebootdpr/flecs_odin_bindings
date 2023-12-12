@@ -3,12 +3,15 @@ package flecs
 import "core:c"
 import "core:strings"
 
+//typedef struct ecs_pipeline_desc_t {
 PipelineDesc :: struct
 {
     entity: Entity,
     query: QueryDesc,
 }
 
+//#ifndef FLECS_LEGACY
+//#define ECS_PIPELINE_DEFINE(world, id_, ...) \
 PipelineDefine :: proc(world: ^World, $T: typeid, args: ..string)
 {
     pdesc: PipelineDesc
@@ -24,9 +27,13 @@ PipelineDefine :: proc(world: ^World, $T: typeid, args: ..string)
 
     id := pipeline_init(world, &pdesc)
 }
+//#define ECS_PIPELINE(world, id, ...) \
 
+//#define ecs_pipeline(world, ...)\
+//struct pipeline : entity {
 pipeline :: proc(world: ^World, desc: PipelineDesc) -> Entity
 {
     desc := desc
-    return pipeline_init(world, &desc)
+    return ecs_pipeline_init(world, &desc)
 }
+//#endif
