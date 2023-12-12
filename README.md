@@ -1,21 +1,20 @@
-# flecs-odin
- An almost complete binding of flecs to the Odin programming language,
- version should match up with the latest flecs release (current: 3.1.0)
+# flecs_odin_bindings
+ (current: 3.2.9)
  
 ## NOTE
- This is basically complete, with most core functionality (including systems) working, but some things like modules aren't included because I stopped working on this a while ago. If you'd like to contribute, feel free to open a pull request!
+ I dont care about "naming standards", I care about seamless bindings and if you start naming everything with different names than the headers, you will go crazy updating the bindings for each time a new version of FLECS comes out.
 
 ## TODO
- As mentioned before, these bindings are mostly complete but some work is still to be done. This includes:
-- Ensuring that the bindings work in newer versions (the current bindings were only developed for flecs 3.1.0)
-- Organizing the file structure to be more coherent
-- A heavy bug-fix check (the code *should* work but I've never actually done a full stress test of it so there may be some unforeseen consequences)
+ Puting All types in a file called types.proc
+ Puting All procedures in a file called procedures.proc
+ Puting All the weird interfacing in a file called lazy.proc or just dont intercae anything (i.e. Users should imp,ement manually $T and size_of(T))
 
 ## Usage
-Bindings should work on all platforms, just place the dynamic library for flecs in the root of your project (or wherever the executable is run) and the bindings will work immediately.
+I created a folder in Odin/vendor/flecs
+And I put all the files in there, the compiled library I put in the root folder of my game, I use the .dll and the .lib when developing, and I use the static lib for release.
 
 ## Style Guide
-- Functions use snake_case
-- Types use PascalCase
+- Functions use as direct as possible from the C api
+- Types use RandomCasing
 - Macros use WHATEVER_THIS_IS
-- Type aliases use typename_t
+- Type aliases use asd_random_case_t
